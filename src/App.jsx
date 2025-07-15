@@ -351,15 +351,16 @@ const App = () => {
 
       <div className="bg-white rounded-3xl border border-gray-200 p-6 sm:p-8 md:p-10 max-w-2xl w-full mt-4">
         <div className="flex justify-center mb-4">
-          <img src="/logo.png" alt="First Bench Learning Logo" className="max-w-[250px] h-auto" onError={(e) => { e.target.onerror = null; e.target.src="https://placehold.co/250x94/ffffff/000000?text=First+Bench+Learning" }} />
+          <img src="/logo.png" alt="First Bench Learning Logo" className="max-w-[200px] h-auto" onError={(e) => { e.target.onerror = null; e.target.src="https://placehold.co/200x75/ffffff/000000?text=First+Bench" }} />
         </div>
 
-        <h1 className="text-4xl sm:text-5xl font-extrabold text-center mb-4 sm:mb-8 font-poppins bg-clip-text text-transparent bg-gradient-to-r from-pink-500 to-red-500">
-          AI For Smart Teacher Course
+        <h1 className="text-4xl sm:text-5xl font-extrabold text-center mb-4 font-poppins bg-clip-text text-transparent bg-gradient-to-r from-pink-500 to-red-500">
+          <span className="block sm:inline">AI For Smart</span> <span className="block sm:inline">Teacher Course</span>
         </h1>
 
         {currentPage === 'landingPage' && (
           <div className="text-center space-y-4">
+            <div className="border-b border-gray-200 my-6"></div>
             <p className="text-base sm:text-xl font-bold text-gray-600 sm:text-gray-900 leading-tight px-2 mt-0">
               Grab now the 100+ sessions Celebration 50% offer! Don't miss out on this incredible opportunity! ✨
             </p>
