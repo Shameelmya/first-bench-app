@@ -319,12 +319,23 @@ const App = () => {
         </div>
       </div>
 
+      {/* Sticky Header - Conditionally rendered */}
       {currentPage === 'landingPage' && (
-        <header className="sticky top-0 z-40 w-full bg-white border-b border-gray-200 py-3 px-4 flex items-center justify-between rounded-b-xl">
-          <div className="flex items-center">
-            <img src="https://placehold.co/100x30/ffffff/000000?text=FBL" alt="First Bench Learning Logo" className="h-8 w-auto mr-4" onError={(e) => { e.target.onerror = null; e.target.src="https://placehold.co/100x30/ffffff/000000?text=FBL" }} />
+        <header className="sticky top-0 z-40 w-full bg-white border-b border-gray-200 py-3 px-4 grid grid-cols-3 items-center rounded-b-xl">
+          <div className="justify-self-start">
+             <a href="tel:+917559865389" className="p-2 rounded-full bg-blue-500 text-white hover:bg-blue-600 transition duration-300 ease-in-out inline-flex" aria-label="Call for Inquiry">
+                <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z"></path></svg>
+            </a>
           </div>
-          <div className="flex items-center space-x-3">
+          <div className="justify-self-center">
+             <button
+              onClick={() => setCurrentPage('form')}
+              className="bg-gradient-to-r from-blue-500 to-blue-700 text-white py-2 px-4 rounded-full font-semibold text-sm whitespace-nowrap hover:from-blue-600 hover:to-blue-800 transition duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
+            >
+              Register Now
+            </button>
+          </div>
+          <div className="justify-self-end">
             <button
               onClick={() => setShowWhatsAppModal(true)}
               className="p-2 rounded-full bg-green-500 text-white hover:bg-green-600 transition duration-300 ease-in-out"
@@ -334,37 +345,37 @@ const App = () => {
                 <path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.72.45 3.38 1.22 4.85L2 22l5.09-1.34c1.42.78 3.02 1.25 4.85 1.25C17.5 21.91 22 17.46 22 11.91S17.5 2 12.04 2zM17.16 16.12c-.2.55-.7.83-1.07.83-.37 0-.7-.12-1.04-.25-.33-.12-1.55-.64-1.79-.73-.24-.09-.43-.13-.6-.13-.17 0-.36.06-.55.25-.19.19-.73.7-.89.85-.16.16-.32.18-.59.07-.26-.1-.97-.36-1.85-.92-.69-.44-1.15-.81-1.52-1.28-.37-.47-.39-.44-.66-.89-.27-.45-.03-.41.19-.64.22-.22.49-.51.66-.68.17-.17.23-.29.3-.47.07-.19.03-.36-.01-.52-.04-.15-.36-.86-.5-1.17-.14-.3-.28-.26-.48-.27-.2-.01-.43-.01-.66-.01-.23 0-.6.06-.92.35-.32.29-.97.94-.97 2.29 0 1.35 1 2.63 1.14 2.81.14.18 1.95 2.98 4.75 4.14 2.8.99 3.49.92 4.14.82.65-.09 1.4-.58 1.6-1.17.2-.59.2-1.09.14-1.19-.06-.1-.24-.15-.5-.25z"/>
               </svg>
             </button>
-            <button
-              onClick={() => setCurrentPage('form')}
-              className="bg-gradient-to-r from-blue-500 to-blue-700 text-white py-2 px-4 rounded-full font-semibold text-sm hover:from-blue-600 hover:to-blue-800 transition duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
-            >
-              Register Now
-            </button>
           </div>
         </header>
       )}
 
       <div className="bg-white rounded-3xl border border-gray-200 p-6 sm:p-8 md:p-10 max-w-2xl w-full mt-4">
-        <div className="flex justify-center mb-8 sm:hidden">
-          <img src="/logo.png" alt="First Bench Learning Logo" />
- className="h-16 w-auto rounded-lg" onError={(e) => { e.target.onerror = null; e.target.src="https://placehold.co/200x60/ffffff/000000?text=FIRST+BENCH+Learning+Hub" }} />
+        <div className="flex justify-center mb-4">
+          <img src="/logo.png" alt="First Bench Learning Logo" className="max-w-[250px] h-auto" onError={(e) => { e.target.onerror = null; e.target.src="https://placehold.co/250x94/ffffff/000000?text=First+Bench+Learning" }} />
         </div>
 
-        <h1 className="text-3xl sm:text-4xl font-extrabold text-center mb-8 font-poppins bg-clip-text text-transparent bg-gradient-to-r from-pink-500 to-red-500">
+        <h1 className="text-4xl sm:text-5xl font-extrabold text-center mb-4 sm:mb-8 font-poppins bg-clip-text text-transparent bg-gradient-to-r from-pink-500 to-red-500">
           AI For Smart Teacher Course
         </h1>
 
         {currentPage === 'landingPage' && (
           <div className="text-center space-y-4">
-            <p className="text-base sm:text-xl font-bold text-gray-900 leading-tight px-2">
+            <p className="text-base sm:text-xl font-bold text-gray-600 sm:text-gray-900 leading-tight px-2 mt-0">
               Grab now the 100+ sessions Celebration 50% offer! Don't miss out on this incredible opportunity! ✨
             </p>
-            <button
-              onClick={() => setCurrentPage('form')}
-              className="w-auto bg-gradient-to-r from-blue-500 to-blue-700 text-white py-2 px-6 text-base sm:py-3 sm:px-8 sm:text-lg rounded-full font-semibold shadow-lg hover:from-blue-600 hover:to-blue-800 transition duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
-            >
-              Register Now with 50% off ✨
-            </button>
+            <div className="py-4">
+                <button
+                onClick={() => setCurrentPage('form')}
+                className="w-auto bg-gradient-to-r from-blue-500 to-blue-700 text-white py-3 px-8 text-lg rounded-full font-semibold shadow-lg hover:from-blue-600 hover:to-blue-800 transition duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
+                >
+                Register Now with 50% off ✨
+                </button>
+            </div>
+            <div className="bg-blue-50 border-l-4 border-blue-400 text-blue-800 p-4 rounded-lg text-center">
+                <p className="font-light text-black">Next Batch Starts:</p>
+                <p className="font-bold text-base sm:text-lg">July 21, 2025 (Monday) 7:00 PM IST</p>
+            </div>
+
 
             <div className="space-y-6 text-left mt-10">
               {/* Faculty Section */}
