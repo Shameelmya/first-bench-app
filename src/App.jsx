@@ -374,7 +374,7 @@ const App = () => {
             </div>
             <div className="bg-blue-50 border-l-4 border-blue-400 text-blue-800 p-4 rounded-lg text-center">
                 <p className="font-light text-black">Next Batch Starts:</p>
-                <p className="font-bold text-base sm:text-lg">July 21, 2025 (Monday) 7:00 PM IST</p>
+                <p className="font-bold text-base sm:text-lg">July 28, 2025 (Monday) 7:00 PM IST</p>
             </div>
 
 
