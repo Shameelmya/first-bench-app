@@ -32,8 +32,8 @@ const App = () => {
 
   // State for UI flow
   const [currentPage, setCurrentPage] = useState('landingPage'); // 'landingPage', 'form', 'paymentOptions'
-  const [originalAmount, setOriginalAmount] = useState(1999); // Keeping this for calculation
-  const [payableAmount, setPayableAmount] = useState(1999);
+  const [originalAmount, setOriginalAmount] = useState(2499); // Keeping this for calculation
+  const [payableAmount, setPayableAmount] = useState(2499);
   const [discountAmount, setDiscountAmount] = useState(0);
   const [couponApplied, setCouponApplied] = useState(false);
   const [showModal, setShowModal] = useState(false);
@@ -149,12 +149,12 @@ const App = () => {
   // Apply coupon logic
   const applyCoupon = () => {
     if (!couponApplied) {
-      const newPayableAmount = 999;
-      const newDiscountAmount = originalAmount - newPayableAmount;
+      const newDiscountAmount = 700;
+      const newPayableAmount = originalAmount - newDiscountAmount;
       setPayableAmount(newPayableAmount);
       setDiscountAmount(newDiscountAmount);
       setCouponApplied(true);
-      setModalMessage('Coupon "FLAT50" applied successfully! Payable amount is now ₹ 999.');
+      setModalMessage('Coupon "FLAT700" applied successfully! Payable amount is now ₹ 1799.');
       setShowModal(true);
       setTriggerCouponAnimation(true);
       setTimeout(() => setTriggerCouponAnimation(false), 1000);
@@ -315,7 +315,7 @@ const App = () => {
       </style>
       <div className="w-full bg-gradient-to-r from-pink-500 to-red-500 text-white py-2 px-4 mb-4 rounded-lg shadow-md overflow-hidden relative">
         <div className="whitespace-nowrap animate-marquee text-lg font-bold">
-          🎉 100+ Sessions Celebration! ✨ FLAT 50% Offer! 🚀 Don't Miss Out! 🎉
+          100+ Sessions Celebration! ✨ FLAT Rs.700 Offer! 🚀 Now only for just <s className="opacity-75">Rs.2499</s> Rs. 1799 Don't Miss Out!
         </div>
       </div>
 
@@ -362,19 +362,19 @@ const App = () => {
           <div className="text-center space-y-4">
             <div className="border-b border-gray-200 my-6"></div>
             <p className="text-base sm:text-xl font-bold text-gray-600 sm:text-gray-900 leading-tight px-2 mt-0">
-              Grab now the 100+ sessions Celebration 50% offer! Don't miss out on this incredible opportunity! ✨
+              Grab now the 100+ sessions Celebration Rs.700 Flat offer! Don't miss out on this incredible opportunity! ✨
             </p>
             <div className="py-4">
                 <button
                 onClick={() => setCurrentPage('form')}
                 className="w-auto bg-gradient-to-r from-blue-500 to-blue-700 text-white py-3 px-8 text-lg rounded-full font-semibold shadow-lg hover:from-blue-600 hover:to-blue-800 transition duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
                 >
-                Register Now with 50% off ✨
+                Register Now with offer
                 </button>
             </div>
             <div className="bg-blue-50 border-l-4 border-blue-400 text-blue-800 p-4 rounded-lg text-center">
                 <p className="font-light text-black">Next Batch Starts:</p>
-                <p className="font-bold text-base sm:text-lg">July 28, 2025 (Monday) 7:00 PM IST</p>
+                <p className="font-bold text-base sm:text-lg">August 4, 2025 (Monday) 7:00 PM IST</p>
             </div>
 
 
@@ -711,8 +711,8 @@ const App = () => {
                   <div className="flex items-center">
                     <span className="text-xl mr-2">🏷️</span>
                     <div>
-                      <p className="font-semibold text-gray-800 text-sm">Coupon Code: FLAT50</p>
-                      <p className="text-xs text-gray-600">50% FLAT off on 100+ Sessions Celebration</p>
+                      <p className="font-semibold text-gray-800 text-sm">Coupon Code: FLAT700</p>
+                      <p className="text-xs text-gray-600">Rs.700 FLAT off on 100+ Sessions Celebration</p>
                     </div>
                   </div>
                   <button
