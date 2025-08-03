@@ -32,14 +32,16 @@ const App = () => {
 
   // State for UI flow
   const [currentPage, setCurrentPage] = useState('landingPage'); // 'landingPage', 'form', 'paymentOptions'
-  const [originalAmount, setOriginalAmount] = useState(2499); // Keeping this for calculation
+  const [originalAmount] = useState(2499); // Base fee for the course
   const [payableAmount, setPayableAmount] = useState(2499);
   const [discountAmount, setDiscountAmount] = useState(0);
+  const [couponCode, setCouponCode] = useState('');
   const [couponApplied, setCouponApplied] = useState(false);
+  const [couponStatusMessage, setCouponStatusMessage] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [modalMessage, setModalMessage] = useState('');
   const [showWhatsAppModal, setShowWhatsAppModal] = useState(false);
-  const [showNamePromptModal, setShowNamePromptModal] = useState(false); // State for the new name prompt
+  const [showNamePromptModal, setShowNamePromptModal] = useState(false);
   const [loading, setLoading] = useState(false);
   const [sameAsMobile, setSameAsMobile] = useState(false);
   const [triggerCouponAnimation, setTriggerCouponAnimation] = useState(false);
@@ -61,7 +63,7 @@ const App = () => {
       [name]: value,
     }));
   };
-
+  
   // Handle "Same as Mobile Number" checkbox
   const handleSameAsMobileChange = (e) => {
     const isChecked = e.target.checked;
@@ -130,6 +132,7 @@ const App = () => {
             payableAmount: payableAmount,
             discountAmount: discountAmount,
             couponApplied: couponApplied,
+            couponCode: couponCode,
             timestamp: new Date().toLocaleString(),
           }),
         });
@@ -146,22 +149,60 @@ const App = () => {
     }
   };
 
-  // Apply coupon logic
-  const applyCoupon = () => {
-    if (!couponApplied) {
-      const newDiscountAmount = 700;
-      const newPayableAmount = originalAmount - newDiscountAmount;
-      setPayableAmount(newPayableAmount);
-      setDiscountAmount(newDiscountAmount);
-      setCouponApplied(true);
-      setModalMessage('Coupon "FLAT700" applied successfully! Payable amount is now ₹ 1799.');
-      setShowModal(true);
-      setTriggerCouponAnimation(true);
-      setTimeout(() => setTriggerCouponAnimation(false), 1000);
-    } else {
-      setModalMessage('Coupon already applied.');
-      setShowModal(true);
+  // Apply coupon logic - UPDATED
+  const handleApplyCoupon = () => {
+    // Check if a coupon is already applied
+    if (couponApplied) {
+      setCouponStatusMessage('A coupon has already been applied.');
+      return;
     }
+
+    const trimmedCoupon = couponCode.trim().toUpperCase();
+    if (!trimmedCoupon) {
+      setCouponStatusMessage('Please enter a coupon code.');
+      return;
+    }
+
+    let newPayableAmount = originalAmount;
+    let newDiscountAmount = 0;
+    let message = '';
+
+    switch (trimmedCoupon) {
+      case 'FLAT700':
+        newDiscountAmount = 700;
+        newPayableAmount = originalAmount - newDiscountAmount;
+        message = `You have saved ₹${newDiscountAmount}!`;
+        break;
+      case 'FLAT50':
+        // The user requested a final price of 999
+        newPayableAmount = 999;
+        newDiscountAmount = originalAmount - newPayableAmount;
+        message = `You have saved ₹${newDiscountAmount}!`;
+        break;
+      default:
+        setCouponStatusMessage('Invalid coupon code. Please try again.');
+        return;
+    }
+
+    setPayableAmount(newPayableAmount);
+    setDiscountAmount(newDiscountAmount);
+    setCouponApplied(true);
+    setModalMessage(message);
+    setShowModal(true);
+    setCouponStatusMessage('Applied!');
+    setTriggerCouponAnimation(true);
+    setTimeout(() => setTriggerCouponAnimation(false), 1000);
+  };
+  
+  // New function to remove the applied coupon
+  const handleRemoveCoupon = () => {
+    setCouponApplied(false);
+    setCouponCode('');
+    setCouponStatusMessage('');
+    setDiscountAmount(0);
+    setPayableAmount(originalAmount);
+    setModalMessage('Coupon removed. Your total amount is now ₹2499.');
+    setShowModal(true);
   };
 
   // Function to copy text to clipboard
@@ -203,10 +244,15 @@ const App = () => {
     setShowNamePromptModal(false);
   };
 
-  // Generic Modal component
+  // Generic Modal component with added animation for coupon success
   const Modal = ({ message, onClose }) => (
     <div className="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-xl shadow-lg p-6 max-w-sm w-full text-center">
+        {message.includes('saved') && (
+          <div className="flex justify-center items-center mb-4">
+            <span className="text-3xl animate-pop">🎉</span>
+          </div>
+        )}
         <p className="text-base sm:text-lg font-semibold text-gray-800 mb-4">{message}</p>
         <button
           onClick={onClose}
@@ -293,9 +339,9 @@ const App = () => {
     );
   };
 
-
   return (
     <div className="min-h-screen bg-white flex flex-col items-center justify-center p-4 font-inter">
+      {/* Custom fonts and keyframes */}
       <style>
         {`
         @keyframes marquee {
@@ -311,11 +357,20 @@ const App = () => {
         .font-poppins {
             font-family: 'Poppins', sans-serif;
         }
+        @keyframes pop {
+          0% { transform: scale(0); opacity: 0; }
+          50% { transform: scale(1.2); opacity: 1; }
+          100% { transform: scale(1); opacity: 1; }
+        }
+        .animate-pop {
+          animation: pop 0.5s ease-out;
+        }
         `}
       </style>
       <div className="w-full bg-gradient-to-r from-pink-500 to-red-500 text-white py-2 px-4 mb-4 rounded-lg shadow-md overflow-hidden relative">
+        {/* Updated Marquee Text */}
         <div className="whitespace-nowrap animate-marquee text-lg font-bold">
-          100+ Sessions Celebration! ✨ FLAT Rs.700 Offer! 🚀 Now only for just <s className="opacity-75">Rs.2499</s> Rs. 1799 Don't Miss Out!
+          100+ Sessions Celebration! ✨ FLAT Rs.700 & other amazing Offers! 🚀 Don't Miss Out!
         </div>
       </div>
 
@@ -323,12 +378,12 @@ const App = () => {
       {currentPage === 'landingPage' && (
         <header className="sticky top-0 z-40 w-full bg-white border-b border-gray-200 py-3 px-4 grid grid-cols-3 items-center rounded-b-xl">
           <div className="justify-self-start">
-             <a href="tel:+917559865389" className="p-2 rounded-full bg-blue-500 text-white hover:bg-blue-600 transition duration-300 ease-in-out inline-flex" aria-label="Call for Inquiry">
+              <a href="tel:+917559865389" className="p-2 rounded-full bg-blue-500 text-white hover:bg-blue-600 transition duration-300 ease-in-out inline-flex" aria-label="Call for Inquiry">
                 <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z"></path></svg>
             </a>
           </div>
           <div className="justify-self-center">
-             <button
+              <button
               onClick={() => setCurrentPage('form')}
               className="bg-gradient-to-r from-blue-500 to-blue-700 text-white py-2 px-4 rounded-full font-semibold text-sm whitespace-nowrap hover:from-blue-600 hover:to-blue-800 transition duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
             >
@@ -362,7 +417,7 @@ const App = () => {
           <div className="text-center space-y-4">
             <div className="border-b border-gray-200 my-6"></div>
             <p className="text-base sm:text-xl font-bold text-gray-600 sm:text-gray-900 leading-tight px-2 mt-0">
-              Grab now the 100+ sessions Celebration Rs.700 Flat offer! Don't miss out on this incredible opportunity! ✨
+              Grab now the 100+ sessions Celebration offers! Don't miss out on this incredible opportunity! ✨
             </p>
             <div className="py-4">
                 <button
@@ -372,9 +427,10 @@ const App = () => {
                 Register Now with offer
                 </button>
             </div>
+            {/* Updated start date */}
             <div className="bg-blue-50 border-l-4 border-blue-400 text-blue-800 p-4 rounded-lg text-center">
                 <p className="font-light text-black">Next Batch Starts:</p>
-                <p className="font-bold text-base sm:text-lg">August 4, 2025 (Monday) 7:00 PM IST</p>
+                <p className="font-bold text-base sm:text-lg">August 5, 2025 (Tuesday) 7:00 PM IST</p>
             </div>
 
 
@@ -696,37 +752,57 @@ const App = () => {
               ></textarea>
             </div>
 
-            {/* Course Fee & Coupon Section (Enhanced with Logo Colors) */}
+            {/* Course Fee & Coupon Section (Enhanced with Logo Colors) - UPDATED */}
             <div className="bg-gradient-to-br from-pink-500 to-red-500 p-4 rounded-xl shadow-inner border border-pink-400">
               <h3 className="text-xl font-bold text-white mb-3">💰 Course & Payment Summary</h3>
               <div className="bg-white p-3 rounded-lg border border-gray-200 text-sm sm:text-base">
                 <p className="text-gray-700 mb-1">
-                  <span className="font-semibold">Course Name:</span> <span className="block sm:inline">AI For Smart Teacher Course</span> {/* Responsive wrapping */}
+                  <span className="font-semibold">Course Name:</span> <span className="block sm:inline">AI For Smart Teacher Course</span>
                 </p>
                 <p className="text-gray-700 mb-3">
                   <span className="font-semibold">Fee:</span> ₹ {originalAmount}
                 </p>
 
-                <div className={`flex items-center justify-between bg-gray-50 p-2 rounded-lg shadow-sm border border-gray-200 mb-3 ${triggerCouponAnimation ? 'animate-pulse' : ''}`}> {/* Coupon animation */}
-                  <div className="flex items-center">
-                    <span className="text-xl mr-2">🏷️</span>
-                    <div>
-                      <p className="font-semibold text-gray-800 text-sm">Coupon Code: FLAT700</p>
-                      <p className="text-xs text-gray-600">Rs.700 FLAT off on 100+ Sessions Celebration</p>
-                    </div>
+                {/* Coupon input field and buttons */}
+                <div className={`space-y-2 mb-3 ${triggerCouponAnimation ? 'animate-pulse' : ''}`}>
+                  <label htmlFor="couponCode" className="block text-sm font-semibold text-gray-800">Have a coupon code?</label>
+                  <div className="flex rounded-lg shadow-sm">
+                    <input
+                      type="text"
+                      id="couponCode"
+                      name="couponCode"
+                      value={couponCode}
+                      onChange={(e) => setCouponCode(e.target.value)}
+                      className="flex-1 block px-4 py-2 border border-gray-300 rounded-l-lg focus:ring-blue-500 focus:border-blue-500 sm:text-sm uppercase"
+                      disabled={couponApplied}
+                    />
+                    <button
+                      type="button"
+                      onClick={handleApplyCoupon}
+                      disabled={couponApplied}
+                      className={`py-2 px-4 rounded-r-lg font-semibold text-sm transition duration-300 ease-in-out
+                        ${couponApplied
+                          ? 'bg-gray-300 text-gray-600 cursor-not-allowed'
+                          : 'bg-orange-500 text-white hover:bg-orange-600 shadow-md'
+                        }`}
+                    >
+                      Apply
+                    </button>
+                    {couponApplied && (
+                      <button
+                        type="button"
+                        onClick={handleRemoveCoupon}
+                        className="ml-2 py-2 px-4 rounded-lg font-semibold text-sm bg-red-500 text-white hover:bg-red-600 shadow-md transition duration-300 ease-in-out"
+                      >
+                        Remove
+                      </button>
+                    )}
                   </div>
-                  <button
-                    type="button"
-                    onClick={applyCoupon}
-                    disabled={couponApplied}
-                    className={`py-1 px-4 rounded-full font-semibold text-xs sm:text-sm transition duration-300 ease-in-out
-                      ${couponApplied
-                        ? 'bg-gray-300 text-gray-600 cursor-not-allowed'
-                        : 'bg-orange-500 text-white hover:bg-orange-600 shadow-md'
-                      }`}
-                  >
-                    {couponApplied ? 'Applied!' : 'Apply'}
-                  </button>
+                  {couponStatusMessage && (
+                    <p className={`text-xs text-center mt-2 ${couponApplied ? 'text-green-600' : 'text-red-600'}`}>
+                      {couponStatusMessage}
+                    </p>
+                  )}
                 </div>
 
                 <div className="border-t border-gray-200 pt-2">
@@ -761,7 +837,7 @@ const App = () => {
               )}
             </button>
 
-            {/* WhatsApp Button on Home Page - Solid Green */}
+            {/* WhatsApp Button on Form Page */}
             <div className="mt-6 text-center">
               <button
                 type="button"
@@ -846,7 +922,7 @@ const App = () => {
             </p>
 
             <div className="mt-6">
-               <button
+                <button
                 type="button"
                 onClick={() => setShowNamePromptModal(true)}
                 className="inline-flex items-center justify-center bg-green-500 text-white py-3 px-4 sm:px-6 rounded-full font-semibold text-base sm:text-lg shadow-md hover:bg-green-600 transition duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50 whitespace-nowrap"
