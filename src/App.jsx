@@ -399,7 +399,8 @@ const App = () => {
       {currentPage === 'landingPage' && (
         <header className="sticky top-0 z-40 w-full bg-white border-b border-gray-200 py-3 px-4 grid grid-cols-3 items-center rounded-b-xl">
           <div className="justify-self-start">
-              <a href="tel:+917559865389" className="p-2 rounded-full bg-[#0da6b6] text-white hover:bg-[#0d7cb9] transition duration-300 ease-in-out inline-flex" aria-label="Call for Inquiry">
+              {/* Updated href attribute with the new phone number */}
+              <a href="tel:+918089007099" className="p-2 rounded-full bg-[#0da6b6] text-white hover:bg-[#0d7cb9] transition duration-300 ease-in-out inline-flex" aria-label="Call for Inquiry">
                 <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z"></path></svg>
             </a>
           </div>
@@ -1044,5 +1045,4 @@ const App = () => {
 };
 
 export default App;
-
 
