@@ -433,8 +433,8 @@ const App = () => {
               />
             </div>
              {/* --- Requirements Text Moved Here, Updated Styling --- */}
-             {/* Added text-sm sm:text-base for responsive font size */}
-             <div className="my-2 text-center font-bold text-[#0d7cb9] text-sm sm:text-base"> {/* Reduced margin */}
+             {/* Changed color to gray, kept reduced font size */}
+             <div className="mt-4 mb-2 text-center font-bold text-gray-600 text-xs sm:text-base"> 
                 <p>✅ No coding experience needed!</p>
                 {/* Wrapped second line and HR in a div for width control */}
                 <div className="inline-block max-w-max mx-auto"> 
@@ -456,26 +456,26 @@ const App = () => {
           <div className="text-center space-y-4">
 
             {/* --- Countdown Timer --- */}
-            {/* Reduced margin-bottom (mb-2) and top margin (mt-2) */}
+            {/* Reduced number size (text-2xl) and label size (text-[0.5rem]) on mobile */}
             <div className="mt-2 mb-2 py-2 sm:p-4 rounded-xl">
               <h3 className="text-lg font-semibold text-gray-800 mb-3">Event Starts In:</h3>
               <div className="grid grid-cols-4 gap-2 text-center">
                 {/* Alternating Background Colors */}
                 <div style={{ backgroundColor: '#0d7cb9' }} className="p-2 sm:p-3 rounded-lg shadow-sm">
-                  <span className="text-3xl sm:text-4xl font-bold text-white block">{timeLeft.days}</span>
-                  <span className="text-[0.6rem] sm:text-xs leading-tight text-gray-200 uppercase">Days</span>
+                  <span className="text-2xl sm:text-4xl font-bold text-white block">{timeLeft.days}</span>
+                  <span className="text-[0.5rem] sm:text-xs leading-tight text-gray-200 uppercase">Days</span>
                 </div>
                 <div style={{ backgroundColor: '#0da6b6' }} className="p-2 sm:p-3 rounded-lg shadow-sm">
-                  <span className="text-3xl sm:text-4xl font-bold text-white block">{timeLeft.hours}</span>
-                  <span className="text-[0.6rem] sm:text-xs leading-tight text-gray-200 uppercase">Hours</span>
+                  <span className="text-2xl sm:text-4xl font-bold text-white block">{timeLeft.hours}</span>
+                  <span className="text-[0.5rem] sm:text-xs leading-tight text-gray-200 uppercase">Hours</span>
                 </div>
                 <div style={{ backgroundColor: '#0d7cb9' }} className="p-2 sm:p-3 rounded-lg shadow-sm">
-                  <span className="text-3xl sm:text-4xl font-bold text-white block">{timeLeft.minutes}</span>
-                  <span className="text-[0.6rem] sm:text-xs leading-tight text-gray-200 uppercase">Minutes</span>
+                  <span className="text-2xl sm:text-4xl font-bold text-white block">{timeLeft.minutes}</span>
+                  <span className="text-[0.5rem] sm:text-xs leading-tight text-gray-200 uppercase">Minutes</span>
                 </div>
                 <div style={{ backgroundColor: '#0da6b6' }} className="p-2 sm:p-3 rounded-lg shadow-sm">
-                  <span className="text-3xl sm:text-4xl font-bold text-white block">{timeLeft.seconds}</span>
-                  <span className="text-[0.6rem] sm:text-xs leading-tight text-gray-200 uppercase">Seconds</span>
+                  <span className="text-2xl sm:text-4xl font-bold text-white block">{timeLeft.seconds}</span>
+                  <span className="text-[0.5rem] sm:text-xs leading-tight text-gray-200 uppercase">Seconds</span>
                 </div>
               </div>
             </div>
@@ -498,14 +498,14 @@ const App = () => {
             <div className="space-y-6 text-left mt-10">
               {/* Faculty Section */}
               <div className="flex flex-col items-center sm:flex-row sm:items-start sm:space-x-6 bg-white p-0 sm:p-6 rounded-xl">
-                {/* Mobile Image - Moderately increased size */}
+                {/* Mobile Image - Adjusted size slightly larger (w-64 h-72) */}
                 <img
                   src="facultymobileui.png"
                   alt="Faculty: Shameel Malayamma"
                   width="2259"
                   height="2869"
-                  className="w-64 h-64 rounded-lg object-cover mb-4 sm:hidden" // Increased size
-                  onError={(e) => { e.target.onerror = null; e.target.src="https://placehold.co/256x256/eeeeee/333333?text=Faculty" }}
+                  className="w-64 h-72 rounded-lg object-cover mb-4 sm:hidden" // Adjusted size
+                  onError={(e) => { e.target.onerror = null; e.target.src="https://placehold.co/256x288/eeeeee/333333?text=Faculty" }}
                 />
                 {/* Desktop Image */}
                 <img
