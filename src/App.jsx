@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react'; // Added useRef
 
 // Define country codes for dropdowns
 const countryCodes = [
@@ -111,7 +111,7 @@ const App = () => {
     // Clean up the interval on component unmount
     return () => clearInterval(timer);
   }, []); // Empty dependency array, runs once on mount
-
+  // Removed extra closing brace that was here
 
   // Handle form field changes
   const handleChange = (e) => {
@@ -315,6 +315,14 @@ const App = () => {
   // New Modal to prompt for user's name
   const NamePromptModal = ({ onClose, onSubmit }) => {
     const [name, setName] = useState(formData.name || '');
+    const inputRef = useRef(null); // Create a ref for the input
+
+    // Effect to focus the input when the modal mounts
+    useEffect(() => {
+      if (inputRef.current) {
+        inputRef.current.focus();
+      }
+    }, []); // Empty dependency array ensures this runs only once when modal mounts
 
     const handleSubmit = (e) => {
       e.preventDefault();
@@ -322,7 +330,7 @@ const App = () => {
         onSubmit(name.trim());
       } else {
         setModalMessage("Please enter your name to proceed.");
-        setShowModal(true);
+        setShowModal(true); // Show the generic modal for validation error
       }
     };
 
@@ -333,12 +341,13 @@ const App = () => {
           <p className="text-sm text-gray-600 mb-4 text-center">Please provide the name used in the application form.</p>
           <form onSubmit={handleSubmit}>
             <input
+              ref={inputRef} // Assign the ref to the input
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm mb-4"
               placeholder="Your Full Name"
-              // Removed required attribute here as well, just in case
+              // required attribute removed previously
             />
             <div className="flex justify-end space-x-3">
               <button type="button" onClick={onClose} className="px-4 py-2 rounded-lg text-gray-600 hover:bg-gray-100 transition duration-300">
@@ -353,6 +362,7 @@ const App = () => {
       </div>
     );
   };
+
 
   return (
     <div className="min-h-screen bg-white flex flex-col items-center justify-center p-4 font-inter">
@@ -432,14 +442,14 @@ const App = () => {
                 onError={(e) => { e.target.onerror = null; e.target.src="https://placehold.co/2900x1056/eeeeee/333333?text=AI+For+Smart+Teacher" }}
               />
             </div>
-             {/* --- Requirements Text Moved Here, Updated Styling --- */}
-             {/* Changed color to gray, kept reduced font size */}
-             <div className="mt-4 mb-2 text-center font-bold text-gray-600 text-xs sm:text-base"> 
-                <p>✅ No coding experience needed!</p>
+             {/* --- Requirements Text Moved Here, Updated Styling & Content --- */}
+             {/* Slightly increased font size (text-sm), kept responsive */}
+             <div className="mt-4 mb-2 text-center font-bold text-gray-600 text-sm sm:text-base"> 
+                <p>⭐ No coding experience needed!</p>
                 {/* Wrapped second line and HR in a div for width control */}
                 <div className="inline-block max-w-max mx-auto"> 
                     <hr className="my-1 border-gray-300"/> {/* Adjusted HR margin */}
-                    <p>📱 No computer is Mandatory, mobile phone is enough!</p>
+                    <p>⭐ No computer needed — mobile is enough!</p>
                 </div>
              </div>
           </>
@@ -456,26 +466,26 @@ const App = () => {
           <div className="text-center space-y-4">
 
             {/* --- Countdown Timer --- */}
-            {/* Reduced number size (text-2xl) and label size (text-[0.5rem]) on mobile */}
+            {/* Reduced container padding (p-1), number size (text-xl), label size (text-[0.4rem]), and gap (gap-1) on mobile */}
             <div className="mt-2 mb-2 py-2 sm:p-4 rounded-xl">
               <h3 className="text-lg font-semibold text-gray-800 mb-3">Event Starts In:</h3>
-              <div className="grid grid-cols-4 gap-2 text-center">
+              <div className="grid grid-cols-4 gap-1 sm:gap-2 text-center">
                 {/* Alternating Background Colors */}
-                <div style={{ backgroundColor: '#0d7cb9' }} className="p-2 sm:p-3 rounded-lg shadow-sm">
-                  <span className="text-2xl sm:text-4xl font-bold text-white block">{timeLeft.days}</span>
-                  <span className="text-[0.5rem] sm:text-xs leading-tight text-gray-200 uppercase">Days</span>
+                <div style={{ backgroundColor: '#0d7cb9' }} className="p-1 sm:p-3 rounded-lg shadow-sm">
+                  <span className="text-xl sm:text-4xl font-bold text-white block">{timeLeft.days}</span>
+                  <span className="text-[0.4rem] sm:text-xs leading-tight text-gray-200 uppercase">Days</span>
                 </div>
-                <div style={{ backgroundColor: '#0da6b6' }} className="p-2 sm:p-3 rounded-lg shadow-sm">
-                  <span className="text-2xl sm:text-4xl font-bold text-white block">{timeLeft.hours}</span>
-                  <span className="text-[0.5rem] sm:text-xs leading-tight text-gray-200 uppercase">Hours</span>
+                <div style={{ backgroundColor: '#0da6b6' }} className="p-1 sm:p-3 rounded-lg shadow-sm">
+                  <span className="text-xl sm:text-4xl font-bold text-white block">{timeLeft.hours}</span>
+                  <span className="text-[0.4rem] sm:text-xs leading-tight text-gray-200 uppercase">Hours</span>
                 </div>
-                <div style={{ backgroundColor: '#0d7cb9' }} className="p-2 sm:p-3 rounded-lg shadow-sm">
-                  <span className="text-2xl sm:text-4xl font-bold text-white block">{timeLeft.minutes}</span>
-                  <span className="text-[0.5rem] sm:text-xs leading-tight text-gray-200 uppercase">Minutes</span>
+                <div style={{ backgroundColor: '#0d7cb9' }} className="p-1 sm:p-3 rounded-lg shadow-sm">
+                  <span className="text-xl sm:text-4xl font-bold text-white block">{timeLeft.minutes}</span>
+                  <span className="text-[0.4rem] sm:text-xs leading-tight text-gray-200 uppercase">Minutes</span>
                 </div>
-                <div style={{ backgroundColor: '#0da6b6' }} className="p-2 sm:p-3 rounded-lg shadow-sm">
-                  <span className="text-2xl sm:text-4xl font-bold text-white block">{timeLeft.seconds}</span>
-                  <span className="text-[0.5rem] sm:text-xs leading-tight text-gray-200 uppercase">Seconds</span>
+                <div style={{ backgroundColor: '#0da6b6' }} className="p-1 sm:p-3 rounded-lg shadow-sm">
+                  <span className="text-xl sm:text-4xl font-bold text-white block">{timeLeft.seconds}</span>
+                  <span className="text-[0.4rem] sm:text-xs leading-tight text-gray-200 uppercase">Seconds</span>
                 </div>
               </div>
             </div>
@@ -498,14 +508,14 @@ const App = () => {
             <div className="space-y-6 text-left mt-10">
               {/* Faculty Section */}
               <div className="flex flex-col items-center sm:flex-row sm:items-start sm:space-x-6 bg-white p-0 sm:p-6 rounded-xl">
-                {/* Mobile Image - Adjusted size slightly larger (w-64 h-72) */}
+                {/* Mobile Image - Adjusted height slightly more (h-80) */}
                 <img
                   src="facultymobileui.png"
                   alt="Faculty: Shameel Malayamma"
                   width="2259"
                   height="2869"
-                  className="w-64 h-72 rounded-lg object-cover mb-4 sm:hidden" // Adjusted size
-                  onError={(e) => { e.target.onerror = null; e.target.src="https://placehold.co/256x288/eeeeee/333333?text=Faculty" }}
+                  className="w-64 h-80 rounded-lg object-cover mb-4 sm:hidden" // Adjusted height
+                  onError={(e) => { e.target.onerror = null; e.target.src="https://placehold.co/256x320/eeeeee/333333?text=Faculty" }}
                 />
                 {/* Desktop Image */}
                 <img
