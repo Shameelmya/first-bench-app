@@ -27,33 +27,91 @@ const App = () => {
     email: '',
     place: '',
     district: '',
-    notes: '',
   });
 
   // State for UI flow
   const [currentPage, setCurrentPage] = useState('landingPage'); // 'landingPage', 'form', 'paymentOptions'
-  const [originalAmount] = useState(2499); // Base fee for the course
-  const [payableAmount, setPayableAmount] = useState(2499);
-  const [discountAmount, setDiscountAmount] = useState(0);
-  const [couponCode, setCouponCode] = useState('');
-  const [couponApplied, setCouponApplied] = useState(false);
-  const [couponStatusMessage, setCouponStatusMessage] = useState('');
+  const [originalAmount] = useState(999); // Base fee for the course
+  const [payableAmount, setPayableAmount] = useState(999);
   const [showModal, setShowModal] = useState(false);
   const [modalMessage, setModalMessage] = useState('');
   const [showWhatsAppModal, setShowWhatsAppModal] = useState(false);
   const [showNamePromptModal, setShowNamePromptModal] = useState(false);
   const [loading, setLoading] = useState(false);
   const [sameAsMobile, setSameAsMobile] = useState(false);
-  const [triggerCouponAnimation, setTriggerCouponAnimation] = useState(false);
   const [showBankDetails, setShowBankDetails] = useState(false); // State for bank details toggle
+
+  // State for Countdown Timer
+  const [timeLeft, setTimeLeft] = useState({
+    days: 0,
+    hours: 0,
+    minutes: 0,
+    seconds: 0,
+  });
 
   // Google Apps Script URL for data submission
   const GOOGLE_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx2Q-CVi1SQOwnPfqnkqc4mD7TzRjHZk2W-AlZVd-C-ys_9a6G0yGXppIbOBI80wucU/exec'; // <<< IMPORTANT: REPLACE THIS
 
-  // Effect to scroll to top whenever the page view changes
-  useEffect(() => {
+  // Helper function to navigate and update hash
+  const navigateTo = (page) => {
+    setCurrentPage(page);
+    window.location.hash = page;
     window.scrollTo(0, 0);
-  }, [currentPage]);
+  };
+
+  // Effect to scroll to top and manage browser history
+  useEffect(() => {
+    // On initial load, set the page based on hash or default
+    const hash = window.location.hash.replace('#', '');
+    if (hash === 'form' || hash === 'paymentOptions') {
+      setCurrentPage(hash);
+    } else {
+      setCurrentPage('landingPage');
+      window.location.hash = 'landingPage';
+    }
+
+    // Listen for hash changes (e.g., browser back/forward)
+    const handleHashChange = () => {
+      const hash = window.location.hash.replace('#', '');
+      if (hash === 'form' || hash === 'paymentOptions' || hash === 'landingPage') {
+        setCurrentPage(hash);
+      } else {
+        setCurrentPage('landingPage');
+      }
+    };
+
+    window.addEventListener('hashchange', handleHashChange);
+    return () => {
+      window.removeEventListener('hashchange', handleHashChange);
+    };
+  }, []); // Empty dependency array ensures this runs only once on mount
+
+  // Effect for Countdown Timer
+  useEffect(() => {
+    // Set the target date: November 1, 2025, 10:00 AM IST
+    const targetDate = new Date('2025-11-01T10:00:00+05:30');
+
+    const timer = setInterval(() => {
+      const now = new Date();
+      const difference = targetDate - now;
+
+      if (difference > 0) {
+        const days = Math.floor(difference / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((difference / (1000 * 60 * 60)) % 24);
+        const minutes = Math.floor((difference / 1000 / 60) % 60);
+        const seconds = Math.floor((difference / 1000) % 60);
+        setTimeLeft({ days, hours, minutes, seconds });
+      } else {
+        // If the date has passed, stop the timer
+        clearInterval(timer);
+        setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+      }
+    }, 1000);
+
+    // Clean up the interval on component unmount
+    return () => clearInterval(timer);
+  }, []); // Empty dependency array, runs once on mount
+
 
   // Handle form field changes
   const handleChange = (e) => {
@@ -130,15 +188,15 @@ const App = () => {
             courseName: 'AI For Smart Teacher Course',
             originalFee: originalAmount,
             payableAmount: payableAmount,
-            discountAmount: discountAmount,
-            couponApplied: couponApplied,
-            couponCode: couponCode,
+            discountAmount: 0,
+            couponApplied: false,
+            couponCode: '',
             timestamp: new Date().toLocaleString(),
           }),
         });
         setModalMessage('Your application has been submitted! Please proceed to payment.');
         setShowModal(true);
-        setCurrentPage('paymentOptions');
+        navigateTo('paymentOptions');
       } catch (error) {
         console.error('Error submitting form:', error);
         setModalMessage('Failed to submit application. Please try again. Error: ' + error.message);
@@ -147,62 +205,6 @@ const App = () => {
         setLoading(false);
       }
     }
-  };
-
-  // Apply coupon logic - UPDATED
-  const handleApplyCoupon = () => {
-    // Check if a coupon is already applied
-    if (couponApplied) {
-      setCouponStatusMessage('A coupon has already been applied.');
-      return;
-    }
-
-    const trimmedCoupon = couponCode.trim().toUpperCase();
-    if (!trimmedCoupon) {
-      setCouponStatusMessage('Please enter a coupon code.');
-      return;
-    }
-
-    let newPayableAmount = originalAmount;
-    let newDiscountAmount = 0;
-    let message = '';
-
-    switch (trimmedCoupon) {
-      case 'FLAT700':
-        newDiscountAmount = 700;
-        newPayableAmount = originalAmount - newDiscountAmount;
-        message = `You have saved ₹${newDiscountAmount}!`;
-        break;
-      case 'FLAT50':
-        // The user requested a final price of 999
-        newPayableAmount = 999;
-        newDiscountAmount = originalAmount - newPayableAmount;
-        message = `You have saved ₹${newDiscountAmount}!`;
-        break;
-      default:
-        setCouponStatusMessage('Invalid coupon code. Please try again.');
-        return;
-    }
-
-    setPayableAmount(newPayableAmount);
-    setDiscountAmount(newDiscountAmount);
-    setCouponApplied(true);
-    setModalMessage(message);
-    setShowModal(true);
-    setCouponStatusMessage('Applied!');
-    setTriggerCouponAnimation(true);
-    setTimeout(() => setTriggerCouponAnimation(false), 1000);
-  };
-  
-  // New function to remove the applied coupon
-  const handleRemoveCoupon = () => {
-    setCouponApplied(false);
-    setCouponCode('');
-    setCouponStatusMessage('');
-    setDiscountAmount(0);
-    setPayableAmount(originalAmount);
-    setModalMessage('Coupon removed. Your total amount is now ₹2499.');
-    setShowModal(true);
   };
 
   // Function to copy text to clipboard
@@ -222,6 +224,18 @@ const App = () => {
     document.body.removeChild(tempInput);
   };
 
+  // --- Helper function for Google Calendar Link ---
+  const getCalendarLink = () => {
+    const title = encodeURIComponent('AI For Smart Teacher Course');
+    // Format: YYYYMMDDTHHMMSS/YYYYMMDDTHHMMSS (local time)
+    const startTime = '20251101T100000';
+    const endTime = '20251101T163000';
+    const dates = `${startTime}/${endTime}`;
+    const location = encodeURIComponent('Alumni Center, Angadippuram, Perinthalmanna');
+    
+    return `https://www.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${dates}&location=${location}&ctz=Asia/Kolkata`;
+  };
+
   // WhatsApp message generation for payment screenshot (now takes a name)
   const getWhatsAppScreenshotMessage = (name) => {
     return `Sir, I'm ${name}, and I'm sending here the screenshot of fee payment for AI For smart teacher Course.`;
@@ -229,7 +243,8 @@ const App = () => {
 
   // WhatsApp message generation for general inquiry
   const getWhatsAppInquiryMessage = () => {
-    return `Hello First Bench Learning, I'm interested in the AI For Smart Teacher Course and have some questions.`;
+    // Updated Salutation
+    return `Hello Dot Projects, I'm interested in the AI For Smart Teacher Course and have some questions.`;
   };
 
   const getWhatsAppLink = (number, message) => {
@@ -323,7 +338,7 @@ const App = () => {
               onChange={(e) => setName(e.target.value)}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm mb-4"
               placeholder="Your Full Name"
-              required
+              // Removed required attribute here as well, just in case
             />
             <div className="flex justify-end space-x-3">
               <button type="button" onClick={onClose} className="px-4 py-2 rounded-lg text-gray-600 hover:bg-gray-100 transition duration-300">
@@ -367,28 +382,23 @@ const App = () => {
         }
         `}
       </style>
-      <div className="w-full bg-gradient-to-r from-pink-500 to-red-500 text-white py-2 px-4 mb-4 rounded-lg shadow-md overflow-hidden relative">
-        {/* Updated Marquee Text */}
-        <div className="whitespace-nowrap animate-marquee text-lg font-bold">
-          100+ Sessions Celebration! ✨ FLAT Rs.700 & other amazing Offers! 🚀 Don't Miss Out!
-        </div>
-      </div>
 
       {/* Sticky Header - Conditionally rendered */}
       {currentPage === 'landingPage' && (
         <header className="sticky top-0 z-40 w-full bg-white border-b border-gray-200 py-3 px-4 grid grid-cols-3 items-center rounded-b-xl">
           <div className="justify-self-start">
-              <a href="tel:+917559865389" className="p-2 rounded-full bg-blue-500 text-white hover:bg-blue-600 transition duration-300 ease-in-out inline-flex" aria-label="Call for Inquiry">
+              <a href="tel:+917559865389" className="p-2 rounded-full bg-[#0da6b6] text-white hover:bg-[#0d7cb9] transition duration-300 ease-in-out inline-flex" aria-label="Call for Inquiry">
                 <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z"></path></svg>
             </a>
           </div>
           <div className="justify-self-center">
               <button
-              onClick={() => setCurrentPage('form')}
-              className="bg-gradient-to-r from-blue-500 to-blue-700 text-white py-2 px-4 rounded-full font-semibold text-sm whitespace-nowrap hover:from-blue-600 hover:to-blue-800 transition duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
-            >
-              Register Now
-            </button>
+                onClick={() => navigateTo('form')}
+                style={{ backgroundColor: '#d72e12' }}
+                className="text-white py-2 px-4 rounded-full font-semibold text-sm whitespace-nowrap hover:opacity-90 transition duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50"
+              >
+                Register Now
+              </button>
           </div>
           <div className="justify-self-end">
             <button
@@ -406,47 +416,112 @@ const App = () => {
 
       <div className="bg-white rounded-3xl border border-gray-200 p-6 sm:p-8 md:p-10 max-w-2xl w-full mt-4">
         <div className="flex justify-center mb-4">
-          <img src="/logo.png" alt="First Bench Learning Logo" className="max-w-[200px] h-auto" onError={(e) => { e.target.onerror = null; e.target.src="https://placehold.co/200x75/ffffff/000000?text=First+Bench" }} />
+          <img src="/logo.png" alt="First Bench Learning Logo" className="max-w-[200px] h-auto" onError={(e) => { e.target.onerror = null; e.target.src="https://placehold.co/200x75/ffffff/000000?text=Dot+Projects" }} />
         </div>
 
-        <h1 className="text-4xl sm:text-5xl font-extrabold text-center mb-4 font-poppins bg-clip-text text-transparent bg-gradient-to-r from-pink-500 to-red-500">
-          <span className="block sm:inline">AI For Smart</span> <span className="block sm:inline">Teacher Course</span>
-        </h1>
+        {/* Conditional Heading: Image on landing, Text on form/payment */}
+        {currentPage === 'landingPage' && (
+          <>
+            <div className="flex justify-center mb-4">
+              <img 
+                src="heading1.png" 
+                alt="AI For Smart Teacher Course" 
+                width="2900" 
+                height="1056" 
+                className="w-full h-auto"
+                onError={(e) => { e.target.onerror = null; e.target.src="https://placehold.co/2900x1056/eeeeee/333333?text=AI+For+Smart+Teacher" }}
+              />
+            </div>
+             {/* --- Requirements Text Moved Here, Updated Styling --- */}
+             {/* Added text-sm sm:text-base for responsive font size */}
+             <div className="my-2 text-center font-bold text-[#0d7cb9] text-sm sm:text-base"> {/* Reduced margin */}
+                <p>✅ No coding experience needed!</p>
+                {/* Wrapped second line and HR in a div for width control */}
+                <div className="inline-block max-w-max mx-auto"> 
+                    <hr className="my-1 border-gray-300"/> {/* Adjusted HR margin */}
+                    <p>📱 No computer is Mandatory, mobile phone is enough!</p>
+                </div>
+             </div>
+          </>
+        )}
+
+        {(currentPage === 'form' || currentPage === 'paymentOptions') && (
+          <h1 className="text-4xl sm:text-5xl font-extrabold text-center mb-4 font-poppins bg-clip-text text-transparent bg-gradient-to-r from-[#0da6b6] to-[#0d7cb9]">
+            <span className="block sm:inline">AI For Smart</span> <span className="block sm:inline">Teacher Course</span>
+          </h1>
+        )}
+
 
         {currentPage === 'landingPage' && (
           <div className="text-center space-y-4">
-            <div className="border-b border-gray-200 my-6"></div>
-            <p className="text-base sm:text-xl font-bold text-gray-600 sm:text-gray-900 leading-tight px-2 mt-0">
-              Grab now the 100+ sessions Celebration offers! Don't miss out on this incredible opportunity! ✨
-            </p>
-            <div className="py-4">
-                <button
-                onClick={() => setCurrentPage('form')}
-                className="w-auto bg-gradient-to-r from-blue-500 to-blue-700 text-white py-3 px-8 text-lg rounded-full font-semibold shadow-lg hover:from-blue-600 hover:to-blue-800 transition duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
-                >
-                Register Now with offer
-                </button>
-            </div>
-            {/* Updated start date */}
-            <div className="bg-blue-50 border-l-4 border-blue-400 text-blue-800 p-4 rounded-lg text-center">
-                <p className="font-light text-black">Next Batch Starts:</p>
-                <p className="font-bold text-base sm:text-lg">August 5, 2025 (Tuesday) 7:00 PM IST</p>
+
+            {/* --- Countdown Timer --- */}
+            {/* Reduced margin-bottom (mb-2) and top margin (mt-2) */}
+            <div className="mt-2 mb-2 py-2 sm:p-4 rounded-xl">
+              <h3 className="text-lg font-semibold text-gray-800 mb-3">Event Starts In:</h3>
+              <div className="grid grid-cols-4 gap-2 text-center">
+                {/* Alternating Background Colors */}
+                <div style={{ backgroundColor: '#0d7cb9' }} className="p-2 sm:p-3 rounded-lg shadow-sm">
+                  <span className="text-3xl sm:text-4xl font-bold text-white block">{timeLeft.days}</span>
+                  <span className="text-[0.6rem] sm:text-xs leading-tight text-gray-200 uppercase">Days</span>
+                </div>
+                <div style={{ backgroundColor: '#0da6b6' }} className="p-2 sm:p-3 rounded-lg shadow-sm">
+                  <span className="text-3xl sm:text-4xl font-bold text-white block">{timeLeft.hours}</span>
+                  <span className="text-[0.6rem] sm:text-xs leading-tight text-gray-200 uppercase">Hours</span>
+                </div>
+                <div style={{ backgroundColor: '#0d7cb9' }} className="p-2 sm:p-3 rounded-lg shadow-sm">
+                  <span className="text-3xl sm:text-4xl font-bold text-white block">{timeLeft.minutes}</span>
+                  <span className="text-[0.6rem] sm:text-xs leading-tight text-gray-200 uppercase">Minutes</span>
+                </div>
+                <div style={{ backgroundColor: '#0da6b6' }} className="p-2 sm:p-3 rounded-lg shadow-sm">
+                  <span className="text-3xl sm:text-4xl font-bold text-white block">{timeLeft.seconds}</span>
+                  <span className="text-[0.6rem] sm:text-xs leading-tight text-gray-200 uppercase">Seconds</span>
+                </div>
+              </div>
             </div>
 
+            {/* --- Limited Seats Text --- */}
+            {/* Reduced text size on mobile (text-lg), Added cursor-pointer and onClick */}
+            <div className="text-lg sm:text-xl font-bold text-gray-800">
+              <span className="animate-pulse">🔴</span> Limited Seats,{' '}
+              <span 
+                className="text-[#0d7cb9] cursor-pointer hover:opacity-80" 
+                onClick={() => navigateTo('form')}
+              >
+                Register Now!
+              </span>
+            </div>
 
+            {/* Removed the border-b */}
+            <div className="my-6"></div> 
+            
             <div className="space-y-6 text-left mt-10">
               {/* Faculty Section */}
-              <div className="flex flex-col items-center sm:flex-row sm:items-start sm:space-x-6 bg-white p-6 rounded-xl border border-gray-200">
+              <div className="flex flex-col items-center sm:flex-row sm:items-start sm:space-x-6 bg-white p-0 sm:p-6 rounded-xl">
+                {/* Mobile Image - Moderately increased size */}
                 <img
-                  src="/Shameel sir (1).jpg"
+                  src="facultymobileui.png"
                   alt="Faculty: Shameel Malayamma"
-                  className="w-48 h-48 sm:w-24 sm:h-24 rounded-full object-cover mb-4 sm:mb-0 flex-shrink-0"
+                  width="2259"
+                  height="2869"
+                  className="w-64 h-64 rounded-lg object-cover mb-4 sm:hidden" // Increased size
+                  onError={(e) => { e.target.onerror = null; e.target.src="https://placehold.co/256x256/eeeeee/333333?text=Faculty" }}
+                />
+                {/* Desktop Image */}
+                <img
+                  src="shameelsir.jpg"
+                  alt="Faculty: Shameel Malayamma"
+                  className="w-24 h-24 rounded-full object-cover sm:mb-0 flex-shrink-0 hidden sm:block"
                   onError={(e) => { e.target.onerror = null; e.target.src="https://placehold.co/100x100/eeeeee/333333?text=Faculty" }}
                 />
                 <div className="text-center sm:text-left">
-                  <h3 className="text-blue-700 font-normal text-sm sm:text-base">Faculty:</h3>
-                  <p className="text-lg sm:text-xl font-bold text-gray-800 leading-tight">Shameel Malayamma</p>
-                  <p className="text-blue-700 font-normal text-sm sm:text-base">AI Training Expert & Founder, First Bench Learning</p>
+                  <h3 className="text-[#0d7cb9] font-normal text-sm sm:text-base">Faculty:</h3>
+                  {/* Added margin-bottom */}
+                  <p className="text-lg sm:text-xl font-bold text-gray-800 leading-tight mb-1">Shameel Malayamma</p> 
+                  {/* Reduced line height */}
+                  <p className="text-gray-600 font-normal text-sm sm:text-base leading-tight">AI Training Expert & Founder, Dot Projects.</p>
+                  {/* Reduced line height & ensured bold */}
+                  <p className="text-gray-600 font-semibold text-sm sm:text-base mt-1 leading-tight">100+ Sessions experienced.</p>
                   <div className="text-yellow-500 text-lg mt-1">
                     ⭐⭐⭐⭐⭐
                   </div>
@@ -455,7 +530,7 @@ const App = () => {
 
               {/* Course Details */}
               <div className="p-6 bg-white rounded-xl">
-                <h3 className="text-xl font-bold text-blue-800 mb-4 text-center border-b-2 border-gray-200 pb-2">Course Details</h3>
+                <h3 className="text-xl font-bold text-[#0d7cb9] mb-4 text-center border-b-2 border-gray-200 pb-2">Course Details</h3>
                 <div className="text-gray-700 text-base space-y-1">
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between py-1">
                     <span className="font-thin">Course Name:</span>
@@ -469,19 +544,59 @@ const App = () => {
                   <div className="border-t border-gray-100 my-1"></div>
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between py-1">
                     <span className="font-thin">Mode:</span>
-                    <span className="font-bold text-left sm:text-left">Live Online Sessions</span>
+                    {/* Updated Mode Text */}
+                    <span className="font-bold text-left sm:text-left">1 day Offline Practical Workshop</span>
                   </div>
                   <div className="border-t border-gray-100 my-1"></div>
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between py-1">
-                    <span className="font-thin">Duration:</span>
-                    <span className="font-bold text-left sm:text-left">7 Days + 3 days Doubt clearance assistance</span>
+                    <span className="font-thin">Date and Time:</span>
+                    {/* Responsive Date/Time Span */}
+                    <span className="font-bold text-left sm:text-left text-[#0d7cb9]">
+                      <span className="sm:hidden"> {/* Mobile View */}
+                        01<sup className="text-xs">st</sup> November 2025 Saturday<br/>(10:00 AM - 4:30 PM)
+                      </span>
+                      <span className="hidden sm:inline"> {/* Desktop View */}
+                        01<sup className="text-xs">st</sup> November 2025 (10:00 AM - 4:30 PM)
+                      </span>
+                    </span>
                   </div>
+                  <div className="border-t border-gray-100 my-1"></div>
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between py-1">
+                    <span className="font-thin">Place:</span>
+                    {/* Updated Place Name */}
+                    <span className="font-bold text-left sm:text-left">Alumni Center, Angadippuram, Perinthalmanna</span>
+                  </div>
+                </div>
+                {/* --- Removed Requirements Text from here --- */}
+                {/* --- Location & Calendar Buttons --- */}
+                {/* Changed back to flex-col on mobile (default), sm:flex-row */}
+                <div className="mt-4 flex flex-col sm:flex-row items-center justify-center gap-3">
+                  <a
+                    href="https://maps.app.goo.gl/JfUsTbZCaeJ5PwDX6?g_st=ac"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    /* Changed back to w-full on mobile, sm:w-auto */
+                    className="w-full sm:w-auto flex items-center justify-center px-4 py-2 bg-gray-100 text-gray-800 rounded-full font-semibold text-sm hover:bg-gray-200 transition-all duration-300"
+                  >
+                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                    Location
+                  </a>
+                  <a
+                    href={getCalendarLink()}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                     /* Changed back to w-full on mobile, sm:w-auto */
+                    className="w-full sm:w-auto flex items-center justify-center px-4 py-2 bg-gray-100 text-gray-800 rounded-full font-semibold text-sm hover:bg-gray-200 transition-all duration-300"
+                  >
+                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                    Add to Calendar
+                  </a>
                 </div>
               </div>
 
               {/* Course Contents */}
-              <div className="bg-gradient-to-br from-pink-500 to-red-500 text-white p-6 rounded-xl border border-pink-400">
-                <h3 className="text-xl font-bold mb-4 text-center border-b-2 border-pink-300 pb-2">Course Contents</h3>
+              <div style={{ backgroundColor: '#0da6b6' }} className="text-white p-6 rounded-xl">
+                <h3 className="text-xl font-bold mb-4 text-center border-b-2 border-cyan-200 pb-2">Course Contents</h3>
                 <ul className="space-y-3 text-base">
                   <li className="flex items-start">
                     <svg className="flex-shrink-0 w-4 h-4 mr-3 mt-1 text-yellow-300" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"></path></svg>
@@ -513,7 +628,11 @@ const App = () => {
                   </li>
                   <li className="flex items-start">
                     <svg className="flex-shrink-0 w-4 h-4 mr-3 mt-1 text-yellow-300" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"></path></svg>
-                    <span className="flex-grow">Slide & Edu Websites Making</span>
+                    <span className="flex-grow">Slide Presentation</span>
+                  </li>
+                  <li className="flex items-start">
+                    <svg className="flex-shrink-0 w-4 h-4 mr-3 mt-1 text-yellow-300" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"></path></svg>
+                    <span className="flex-grow">Educational Website Making</span>
                   </li>
                   <li className="flex items-start">
                     <svg className="flex-shrink-0 w-4 h-4 mr-3 mt-1 text-yellow-300" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"></path></svg>
@@ -531,13 +650,25 @@ const App = () => {
                     <svg className="flex-shrink-0 w-4 h-4 mr-3 mt-1 text-yellow-300" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"></path></svg>
                     <span className="flex-grow">Speak & Video Chat with AI</span>
                   </li>
+                  <li className="flex items-start">
+                    <svg className="flex-shrink-0 w-4 h-4 mr-3 mt-1 text-yellow-300" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"></path></svg>
+                    <span className="flex-grow">AI in Google Workspace</span>
+                  </li>
+                  <li className="flex items-start">
+                    <svg className="flex-shrink-0 w-4 h-4 mr-3 mt-1 text-yellow-300" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"></path></svg>
+                    <span className="flex-grow">Interactive Lectures</span>
+                  </li>
+                  <li className="flex items-start">
+                    <svg className="flex-shrink-0 w-4 h-4 mr-3 mt-1 text-yellow-300" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"></path></svg>
+                    <span className="flex-grow">Story Books & Edu Games</span>
+                  </li>
                   <li className="mt-4 font-semibold text-gray-100">And many more smart AI hacks for your teaching career...</li>
                 </ul>
               </div>
 
               {/* Why AI For Smart Teachers? */}
               <div className="bg-white p-6 rounded-xl">
-                <h3 className="text-xl font-bold text-blue-700 mb-4 text-center border-b-2 border-gray-200 pb-2">Why AI For Smart Teachers?</h3>
+                <h3 className="text-xl font-bold text-[#0d7cb9] mb-4 text-center border-b-2 border-gray-200 pb-2">Why AI For Smart Teachers?</h3>
                 <ul className="space-y-2 text-gray-800 font-noto-serif-malayalam text-base">
                   <li className="flex items-start">
                     <svg className="flex-shrink-0 w-4 h-4 mr-2 mt-1 text-green-600" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"></path></svg>
@@ -549,7 +680,8 @@ const App = () => {
                   </li>
                   <li className="flex items-start">
                     <svg className="flex-shrink-0 w-4 h-4 mr-2 mt-1 text-green-600" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"></path></svg>
-                    <span className="text-left flex-grow">ആക്റ്റീവ് ലേണിംഗിലൂടെ കുട്ടികളെ കൂടുതൽ എൻഗേജ് ചെയ്യാം.</span>
+                    {/* Updated Text */}
+                    <span className="text-left flex-grow">ആക്റ്റീവ് ലേണിംഗിലൂടെ ബോറടിപ്പിക്കാതെ ക്ലാസെടുക്കാം.</span>
                   </li>
                   <li className="flex items-start">
                     <svg className="flex-shrink-0 w-4 h-4 mr-2 mt-1 text-green-600" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"></path></svg>
@@ -563,9 +695,11 @@ const App = () => {
               </div>
             </div>
             <div className="mt-8">
+              {/* Changed background color to blue */}
               <button
-                onClick={() => setCurrentPage('form')}
-                className="w-full bg-gradient-to-r from-blue-500 to-blue-700 text-white py-3 px-8 rounded-full font-semibold text-lg shadow-lg hover:from-blue-600 hover:to-blue-800 transition duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
+                onClick={() => navigateTo('form')}
+                style={{ backgroundColor: '#0d7cb9' }} 
+                className="w-full text-white py-3 px-8 rounded-full font-semibold text-lg shadow-lg hover:opacity-90 transition duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
               >
                 Register Now ✨
               </button>
@@ -626,7 +760,7 @@ const App = () => {
                   className="w-1/4 sm:w-auto px-2 sm:px-3 py-2 border border-gray-300 rounded-l-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 text-sm"
                 >
                   {countryCodes.map((country) => (
-                    <option key={`${country.code}-phone`} value={country.code}>
+                    <option key={`${country.code}-${country.name}-phone`} value={country.code}>
                       {country.code} ({country.name})
                     </option>
                   ))}
@@ -668,7 +802,7 @@ const App = () => {
                   className="w-1/4 sm:w-auto px-2 sm:px-3 py-2 border border-gray-300 rounded-l-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 text-sm disabled:bg-gray-200"
                 >
                   {countryCodes.map((country) => (
-                    <option key={`${country.code}-whatsapp`} value={country.code}>
+                    <option key={`${country.code}-${country.name}-whatsapp`} value={country.code}>
                       {country.code} ({country.name})
                     </option>
                   ))}
@@ -736,84 +870,20 @@ const App = () => {
               />
             </div>
 
-            {/* Notes */}
-            <div>
-              <label htmlFor="notes" className="block text-sm font-medium text-gray-700 mb-1">
-                Any other information needed?
-              </label>
-              <textarea
-                id="notes"
-                name="notes"
-                value={formData.notes}
-                onChange={handleChange}
-                rows="3"
-                className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                placeholder="e.g., specific requirements, questions"
-              ></textarea>
-            </div>
-
-            {/* Course Fee & Coupon Section (Enhanced with Logo Colors) - UPDATED */}
-            <div className="bg-gradient-to-br from-pink-500 to-red-500 p-4 rounded-xl shadow-inner border border-pink-400">
+            {/* Course Fee Section (Enhanced with Logo Colors) - UPDATED */}
+            <div className="bg-gradient-to-br from-[#0da6b6] to-[#0d7cb9] p-4 rounded-xl shadow-inner">
               <h3 className="text-xl font-bold text-white mb-3">💰 Course & Payment Summary</h3>
               <div className="bg-white p-3 rounded-lg border border-gray-200 text-sm sm:text-base">
                 <p className="text-gray-700 mb-1">
                   <span className="font-semibold">Course Name:</span> <span className="block sm:inline">AI For Smart Teacher Course</span>
                 </p>
                 <p className="text-gray-700 mb-3">
-                  <span className="font-semibold">Fee:</span> ₹ {originalAmount}
+                  <span className="font-semibold">Fee:</span> ₹ {originalAmount} <span className="font-thin">(included AC hall, lunch, tea and snacks etc..)</span>
                 </p>
 
-                {/* Coupon input field and buttons */}
-                <div className={`space-y-2 mb-3 ${triggerCouponAnimation ? 'animate-pulse' : ''}`}>
-                  <label htmlFor="couponCode" className="block text-sm font-semibold text-gray-800">Have a coupon code?</label>
-                  <div className="flex rounded-lg shadow-sm">
-                    <input
-                      type="text"
-                      id="couponCode"
-                      name="couponCode"
-                      value={couponCode}
-                      onChange={(e) => setCouponCode(e.target.value)}
-                      className="flex-1 block px-4 py-2 border border-gray-300 rounded-l-lg focus:ring-blue-500 focus:border-blue-500 sm:text-sm uppercase"
-                      disabled={couponApplied}
-                    />
-                    <button
-                      type="button"
-                      onClick={handleApplyCoupon}
-                      disabled={couponApplied}
-                      className={`py-2 px-4 rounded-r-lg font-semibold text-sm transition duration-300 ease-in-out
-                        ${couponApplied
-                          ? 'bg-gray-300 text-gray-600 cursor-not-allowed'
-                          : 'bg-orange-500 text-white hover:bg-orange-600 shadow-md'
-                        }`}
-                    >
-                      Apply
-                    </button>
-                    {couponApplied && (
-                      <button
-                        type="button"
-                        onClick={handleRemoveCoupon}
-                        className="ml-2 py-2 px-4 rounded-lg font-semibold text-sm bg-red-500 text-white hover:bg-red-600 shadow-md transition duration-300 ease-in-out"
-                      >
-                        Remove
-                      </button>
-                    )}
-                  </div>
-                  {couponStatusMessage && (
-                    <p className={`text-xs text-center mt-2 ${couponApplied ? 'text-green-600' : 'text-red-600'}`}>
-                      {couponStatusMessage}
-                    </p>
-                  )}
-                </div>
-
                 <div className="border-t border-gray-200 pt-2">
-                  <p className="flex justify-between text-gray-700 text-sm sm:text-base">
-                    <span>Total Amount:</span> <span className="font-semibold">₹ {originalAmount}</span>
-                  </p>
-                  <p className="flex justify-between text-green-700 mb-2 text-sm sm:text-base">
-                    <span>Discount:</span> <span className="font-semibold">- ₹ {discountAmount}</span>
-                  </p>
                   <div className="border-t border-blue-200 pt-2">
-                    <p className="flex justify-between text-lg sm:text-xl font-bold text-blue-700">
+                    <p className="flex justify-between text-lg sm:text-xl font-bold text-[#0d7cb9]">
                       <span>Total Payable:</span> <span>₹ {payableAmount}</span>
                     </p>
                   </div>
@@ -824,7 +894,8 @@ const App = () => {
             {/* Submit Button with logo blue gradient */}
             <button
               type="submit"
-              className="w-full bg-gradient-to-r from-blue-500 to-blue-700 text-white py-3 px-4 sm:px-6 rounded-full font-semibold text-base sm:text-lg shadow-lg hover:from-blue-600 hover:to-blue-800 transition duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 flex items-center justify-center"
+              style={{ backgroundColor: '#d72e12' }}
+              className="w-full text-white py-3 px-4 sm:px-6 rounded-full font-semibold text-base sm:text-lg shadow-lg hover:opacity-90 transition duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50 flex items-center justify-center"
               disabled={loading}
             >
               {loading ? (
@@ -856,7 +927,7 @@ const App = () => {
         {currentPage === 'paymentOptions' && (
           <div className="space-y-6 text-center">
             <h2 className="text-2xl font-bold text-gray-800 mb-6">Choose Payment Method</h2>
-            <p className="text-lg font-semibold text-blue-700 mb-4">
+            <p className="text-lg font-semibold text-[#0d7cb9] mb-4">
               Amount Payable: ₹ {payableAmount}
             </p>
 
@@ -868,7 +939,7 @@ const App = () => {
               onClick={() => {
                 window.location.href = `upi://pay?pa=shameelmalayamma13@oksbi&pn=Shameel&am=${payableAmount}&cu=INR&tn=Fee for AI For Smart Teacher Course`;
               }}
-              className="w-full block bg-gradient-to-r from-purple-600 to-indigo-700 text-white py-3 px-6 rounded-full font-semibold text-lg shadow-lg hover:from-purple-700 hover:to-indigo-800 transition duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-opacity-50 mb-4"
+              className="w-full block bg-[#0d7cb9] text-white py-3 px-6 rounded-full font-semibold text-lg shadow-lg hover:bg-opacity-90 transition duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 mb-4"
             >
               Pay with UPI
             </button>
@@ -876,7 +947,7 @@ const App = () => {
             <div className="w-full">
               <button
                 onClick={() => setShowBankDetails(!showBankDetails)}
-                className="w-full flex justify-center items-center bg-gradient-to-r from-teal-600 to-cyan-700 text-white py-3 px-6 rounded-full font-semibold text-lg shadow-lg hover:from-teal-700 hover:to-cyan-800 transition duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-opacity-50"
+                className="w-full flex justify-center items-center bg-[#0d7cb9] text-white py-3 px-6 rounded-full font-semibold text-lg shadow-lg hover:bg-opacity-90 transition duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
               >
                 Bank Transfer
                 <svg className={`w-5 h-5 ml-2 transition-transform duration-300 ${showBankDetails ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
@@ -888,29 +959,29 @@ const App = () => {
                   <h3 className="text-xl font-bold text-blue-800 mb-4">GPay Details:</h3>
                   <p className="text-gray-700 mb-2">
                     <span className="font-semibold">GPay No:</span> 7559865389
-                    <button onClick={() => copyToClipboard('7559865389', 'GPay Number copied!')} className="ml-3 bg-blue-500 text-white px-3 py-1 rounded-lg hover:bg-blue-600 transition duration-300 ease-in-out text-xs">Copy</button>
+                    <button onClick={() => copyToClipboard('7559865389', 'GPay Number copied!')} className="ml-3 bg-[#0da6b6] text-white px-3 py-1 rounded-lg hover:bg-opacity-90 transition duration-300 ease-in-out text-xs">Copy</button>
                   </p>
                   <p className="text-gray-700 mb-4">
                     <span className="font-semibold">GPay Name:</span> MSK Gallery
-                    <button onClick={() => copyToClipboard('MSK Gallery', 'GPay Name copied!')} className="ml-3 bg-blue-500 text-white px-3 py-1 rounded-lg hover:bg-blue-600 transition duration-300 ease-in-out text-xs">Copy</button>
+                    <button onClick={() => copyToClipboard('MSK Gallery', 'GPay Name copied!')} className="ml-3 bg-[#0da6b6] text-white px-3 py-1 rounded-lg hover:bg-opacity-90 transition duration-300 ease-in-out text-xs">Copy</button>
                   </p>
 
                   <h3 className="text-xl font-bold text-blue-800 mb-4">Bank Account Details:</h3>
                   <p className="text-gray-700 mb-2">
                     <span className="font-semibold">Bank:</span> State Bank of India
-                    <button onClick={() => copyToClipboard('State Bank of India', 'Bank Name copied!')} className="ml-3 bg-blue-500 text-white px-3 py-1 rounded-lg hover:bg-blue-600 transition duration-300 ease-in-out text-xs">Copy</button>
+                    <button onClick={() => copyToClipboard('State Bank of India', 'Bank Name copied!')} className="ml-3 bg-[#0da6b6] text-white px-3 py-1 rounded-lg hover:bg-opacity-90 transition duration-300 ease-in-out text-xs">Copy</button>
                   </p>
                   <p className="text-gray-700 mb-2">
                     <span className="font-semibold">Account Name:</span> Muhammad Shameel
-                    <button onClick={() => copyToClipboard('Muhammad Shameel', 'Account Name copied!')} className="ml-3 bg-blue-500 text-white px-3 py-1 rounded-lg hover:bg-blue-600 transition duration-300 ease-in-out text-xs">Copy</button>
+                    <button onClick={() => copyToClipboard('Muhammad Shameel', 'Account Name copied!')} className="ml-3 bg-[#0da6b6] text-white px-3 py-1 rounded-lg hover:bg-opacity-90 transition duration-300 ease-in-out text-xs">Copy</button>
                   </p>
                   <p className="text-gray-700 mb-2">
                     <span className="font-semibold">Account No:</span> 32865807717
-                    <button onClick={() => copyToClipboard('32865807717', 'Account Number copied!')} className="ml-3 bg-blue-500 text-white px-3 py-1 rounded-lg hover:bg-blue-600 transition duration-300 ease-in-out text-xs">Copy</button>
+                    <button onClick={() => copyToClipboard('32865807717', 'Account Number copied!')} className="ml-3 bg-[#0da6b6] text-white px-3 py-1 rounded-lg hover:bg-opacity-90 transition duration-300 ease-in-out text-xs">Copy</button>
                   </p>
                   <p className="text-gray-700 mb-4">
                     <span className="font-semibold">IFSC:</span> SBIN0002207
-                    <button onClick={() => copyToClipboard('SBIN0002207', 'IFSC copied!')} className="ml-3 bg-blue-500 text-white px-3 py-1 rounded-lg hover:bg-blue-600 transition duration-300 ease-in-out text-xs">Copy</button>
+                    <button onClick={() => copyToClipboard('SBIN0002207', 'IFSC copied!')} className="ml-3 bg-[#0da6b6] text-white px-3 py-1 rounded-lg hover:bg-opacity-90 transition duration-300 ease-in-out text-xs">Copy</button>
                   </p>
                   <button onClick={() => copyToClipboard(`GPay No: 7559865389\nGPay Name: MSK Gallery\n\nBank: State Bank of India\nAccount Name: Muhammad Shameel\nAccount No: 32865807717\nIFSC: SBIN0002207`, 'All Bank Details copied!')} className="w-full bg-indigo-500 text-white px-4 py-2 rounded-lg hover:bg-indigo-600 transition duration-300 ease-in-out text-sm mt-4">Copy All Details</button>
                 </div>
@@ -934,7 +1005,7 @@ const App = () => {
               </button>
             </div>
             <button
-              onClick={() => setCurrentPage('form')}
+              onClick={() => navigateTo('form')}
               className="mt-4 text-blue-600 hover:underline"
             >
               Back to Form
@@ -951,3 +1022,4 @@ const App = () => {
 };
 
 export default App;
+
