@@ -88,8 +88,8 @@ const App = () => {
 
   // Effect for Countdown Timer
   useEffect(() => {
-    // Set the target date: November 1, 2025, 10:00 AM IST
-    const targetDate = new Date('2025-11-01T10:00:00+05:30');
+    // Set the target date: November 8, 2025, 10:00 AM IST
+    const targetDate = new Date('2025-11-08T10:00:00+05:30'); // Updated Date
 
     const timer = setInterval(() => {
       const now = new Date();
@@ -111,7 +111,6 @@ const App = () => {
     // Clean up the interval on component unmount
     return () => clearInterval(timer);
   }, []); // Empty dependency array, runs once on mount
-  // Removed extra closing brace that was here
 
   // Handle form field changes
   const handleChange = (e) => {
@@ -228,11 +227,14 @@ const App = () => {
   const getCalendarLink = () => {
     const title = encodeURIComponent('AI For Smart Teacher Course');
     // Format: YYYYMMDDTHHMMSS/YYYYMMDDTHHMMSS (local time)
-    const startTime = '20251101T100000';
-    const endTime = '20251101T163000';
+    // Updated Date to Nov 8
+    const startTime = '20251108T100000'; 
+    const endTime = '20251108T163000';
     const dates = `${startTime}/${endTime}`;
     const location = encodeURIComponent('Alumni Center, Angadippuram, Perinthalmanna');
     
+    // Note: Standard way to add default reminders isn't universally supported.
+    // Users typically set reminders within their calendar app.
     return `https://www.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${dates}&location=${location}&ctz=Asia/Kolkata`;
   };
 
@@ -536,6 +538,8 @@ const App = () => {
                   <h3 className="text-[#0d7cb9] font-normal text-sm sm:text-base">Faculty:</h3>
                   {/* Added margin-bottom */}
                   <p className="text-lg sm:text-xl font-bold text-gray-800 leading-tight mb-1">Shameel Malayamma</p> 
+                  {/* Added SEM Certified Trainer */}
+                  <p className="text-gray-600 font-normal text-sm sm:text-base leading-tight">🎖️ SEM Certified Trainer</p>
                   {/* Reduced line height */}
                   <p className="text-gray-600 font-normal text-sm sm:text-base leading-tight">AI Training Expert & Founder, Dot Projects.</p>
                   {/* Reduced line height & ensured bold */}
@@ -568,13 +572,13 @@ const App = () => {
                   <div className="border-t border-gray-100 my-1"></div>
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between py-1">
                     <span className="font-thin">Date and Time:</span>
-                    {/* Responsive Date/Time Span */}
+                    {/* Responsive Date/Time Span - Updated Date */}
                     <span className="font-bold text-left sm:text-left text-[#0d7cb9]">
                       <span className="sm:hidden"> {/* Mobile View */}
-                        01<sup className="text-xs">st</sup> November 2025 Saturday<br/>(10:00 AM - 4:30 PM)
+                        08<sup className="text-xs">th</sup> November 2025 Saturday<br/>(10:00 AM - 4:30 PM)
                       </span>
                       <span className="hidden sm:inline"> {/* Desktop View */}
-                        01<sup className="text-xs">st</sup> November 2025 (10:00 AM - 4:30 PM)
+                        08<sup className="text-xs">th</sup> November 2025 (10:00 AM - 4:30 PM)
                       </span>
                     </span>
                   </div>
