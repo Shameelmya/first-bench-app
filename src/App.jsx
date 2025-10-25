@@ -443,7 +443,7 @@ const App = () => {
               />
             </div>
              {/* --- Requirements Text Moved Here, Updated Styling & Content --- */}
-             {/* Slightly increased font size (text-sm), kept responsive */}
+             {/* Changed color to gray, kept reduced font size */}
              <div className="mt-4 mb-2 text-center font-bold text-gray-600 text-sm sm:text-base"> 
                 <p>⭐ No coding experience needed!</p>
                 {/* Wrapped second line and HR in a div for width control */}
@@ -466,26 +466,34 @@ const App = () => {
           <div className="text-center space-y-4">
 
             {/* --- Countdown Timer --- */}
-            {/* Reduced container padding (p-1), number size (text-xl), label size (text-[0.4rem]), and gap (gap-1) on mobile */}
+            {/* Increased text size slightly (text-2xl, text-[0.6rem]), kept padding and gap small */}
             <div className="mt-2 mb-2 py-2 sm:p-4 rounded-xl">
               <h3 className="text-lg font-semibold text-gray-800 mb-3">Event Starts In:</h3>
               <div className="grid grid-cols-4 gap-1 sm:gap-2 text-center">
                 {/* Alternating Background Colors */}
                 <div style={{ backgroundColor: '#0d7cb9' }} className="p-1 sm:p-3 rounded-lg shadow-sm">
-                  <span className="text-xl sm:text-4xl font-bold text-white block">{timeLeft.days}</span>
-                  <span className="text-[0.4rem] sm:text-xs leading-tight text-gray-200 uppercase">Days</span>
+                  {/* Increased number size on mobile */}
+                  <span className="text-2xl sm:text-4xl font-bold text-white block">{timeLeft.days}</span> 
+                  {/* Increased label size on mobile */}
+                  <span className="text-[0.6rem] sm:text-xs leading-tight text-gray-200 uppercase">Days</span>
                 </div>
                 <div style={{ backgroundColor: '#0da6b6' }} className="p-1 sm:p-3 rounded-lg shadow-sm">
-                  <span className="text-xl sm:text-4xl font-bold text-white block">{timeLeft.hours}</span>
-                  <span className="text-[0.4rem] sm:text-xs leading-tight text-gray-200 uppercase">Hours</span>
+                   {/* Increased number size on mobile */}
+                  <span className="text-2xl sm:text-4xl font-bold text-white block">{timeLeft.hours}</span>
+                   {/* Increased label size on mobile */}
+                  <span className="text-[0.6rem] sm:text-xs leading-tight text-gray-200 uppercase">Hours</span>
                 </div>
                 <div style={{ backgroundColor: '#0d7cb9' }} className="p-1 sm:p-3 rounded-lg shadow-sm">
-                  <span className="text-xl sm:text-4xl font-bold text-white block">{timeLeft.minutes}</span>
-                  <span className="text-[0.4rem] sm:text-xs leading-tight text-gray-200 uppercase">Minutes</span>
+                   {/* Increased number size on mobile */}
+                  <span className="text-2xl sm:text-4xl font-bold text-white block">{timeLeft.minutes}</span>
+                   {/* Increased label size on mobile */}
+                  <span className="text-[0.6rem] sm:text-xs leading-tight text-gray-200 uppercase">Minutes</span>
                 </div>
                 <div style={{ backgroundColor: '#0da6b6' }} className="p-1 sm:p-3 rounded-lg shadow-sm">
-                  <span className="text-xl sm:text-4xl font-bold text-white block">{timeLeft.seconds}</span>
-                  <span className="text-[0.4rem] sm:text-xs leading-tight text-gray-200 uppercase">Seconds</span>
+                   {/* Increased number size on mobile */}
+                  <span className="text-2xl sm:text-4xl font-bold text-white block">{timeLeft.seconds}</span>
+                   {/* Increased label size on mobile */}
+                  <span className="text-[0.6rem] sm:text-xs leading-tight text-gray-200 uppercase">Seconds</span>
                 </div>
               </div>
             </div>
