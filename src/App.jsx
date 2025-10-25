@@ -229,7 +229,7 @@ const App = () => {
     // Format: YYYYMMDDTHHMMSS/YYYYMMDDTHHMMSS (local time)
     // Updated Date to Nov 8
     const startTime = '20251108T100000'; 
-    const endTime = '20251108T163000';
+    const endTime = '20251108T160000'; // Updated End Time to 4:00 PM
     const dates = `${startTime}/${endTime}`;
     const location = encodeURIComponent('Alumni Center, Angadippuram, Perinthalmanna');
     
@@ -572,13 +572,13 @@ const App = () => {
                   <div className="border-t border-gray-100 my-1"></div>
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between py-1">
                     <span className="font-thin">Date and Time:</span>
-                    {/* Responsive Date/Time Span - Updated Date */}
+                    {/* Responsive Date/Time Span - Updated Date & Time */}
                     <span className="font-bold text-left sm:text-left text-[#0d7cb9]">
                       <span className="sm:hidden"> {/* Mobile View */}
-                        08<sup className="text-xs">th</sup> November 2025 Saturday<br/>(10:00 AM - 4:30 PM)
+                        08<sup className="text-xs">th</sup> November 2025 Saturday<br/>(10:00 AM - 4:00 PM) {/* Updated End Time */}
                       </span>
                       <span className="hidden sm:inline"> {/* Desktop View */}
-                        08<sup className="text-xs">th</sup> November 2025 (10:00 AM - 4:30 PM)
+                        08<sup className="text-xs">th</sup> November 2025 (10:00 AM - 4:00 PM) {/* Updated End Time */}
                       </span>
                     </span>
                   </div>
@@ -1044,4 +1044,5 @@ const App = () => {
 };
 
 export default App;
+
 
